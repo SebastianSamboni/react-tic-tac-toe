@@ -6,6 +6,17 @@ const TURNS = {
     O: 'o'
 }
 
+const WINNER_COMBOS = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+]
+
 const Square = ({ children, isSelected, updateBoard, index }) => {
     // Constante para definir clase y aplicar estilos por medio de op. ternario donde si se cumple la condición la clase es is-selected, caso contrario, no se aplica clase. Esta constante se asigna como valor del atributo className del div
     const className = `square ${isSelected ? 'is-selected' : ''}`
@@ -22,16 +33,52 @@ const Square = ({ children, isSelected, updateBoard, index }) => {
 }
 
 function App() {
+    // States
     const [board, setBoard] = useState(Array(9).fill(null))
-    
     const [turn, setTurn] = useState(TURNS.X)
+    const [winner, setWinner] = useState(null)
 
+    /**
+     * 
+     * @param {Array} boardToCheck Tablero para verificar si se cumple alguna de las condiciones de victoria
+     */
+    const checkWinner = (boardToCheck) => {
+        for (const combo of WINNER_COMBOS) {
+            const [a, b, c] = combo
+            if (
+                boardToCheck[a] &&
+                boardToCheck[a] === boardToCheck[b] &&
+                boardToCheck[a] === boardToCheck[c]
+            ) return boardToCheck[a]
+
+        }
+
+        return null
+    }
+
+    /**
+     * Método para actualizar el tablero cada que un jugador juegue su turno y a su vez habilite al jugador contrario su siguiente turno
+     * @param {Number} index Posición del array seleccionado
+     */
     const updateBoard = (index) => {
+        // Condicional que verifica que la casilla esté o no vacía
+        if (board[index] || winner) return 
+        
+        // Actualizar tablero
         const newBoard = [...board]
         newBoard[index] = turn
         setBoard(newBoard)
+
+        // Cambiar el turno
         const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X
         setTurn(newTurn)
+
+        // Verificar si hay ganador
+        const newWinner = checkWinner(newBoard)
+        if (newWinner) {
+            setWinner(newWinner)
+            alert(`El ganador es ${newWinner}`)
+        }
     }
 
     return (
